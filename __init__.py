@@ -39,6 +39,7 @@ def _prepare_kw2(env,kw):
              , 'SWIGCOM'
              , 'CPPPATH'
              , 'SHLIBPREFIX'
+             , 'CCFLAGS'
              , 'CFLAGS'
              , 'CXXFLAGS'
              , 'LIBS'
