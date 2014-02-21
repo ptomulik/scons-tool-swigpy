@@ -121,7 +121,7 @@ and generates python module defined by this file undef ``foo`` subdirectory.
 
 .. code-block:: python
 
-   env.SwigPyModule('foo.bar')
+   SwigPyModule('foo.bar')
 
 Construction variables
 ^^^^^^^^^^^^^^^^^^^^^^
