@@ -127,10 +127,13 @@ Construction variables
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Construction variables used by ``SwigPyModule`` are summarized in the following
-table. Note that there are two groups of variables. The first group are the well
-known variables such as ``CFLAGS`` or ``SWIGFLAGS``. The second group are the
-variables prefixed with ``SWIGPY_``. The ``SWIGPY_XXX`` variables, if defined,
-overwrite the well known variables when generating python bindings.
+table. Note that there are three groups of variables. The first group are the
+well known variables such as ``CFLAGS`` or ``SWIGFLAGS``. The second group are
+the variables prefixed with ``SWIGPY_``. These variables, if defined, overwrite
+the well known variables when generating python bindings. The third group are
+the variables prefixed with ``SWIGPY_EXTRA_``. These are lists of flags or
+other items (e.g. paths) that get appended to appropriate construction
+variables (so, for example ``SWIG_EXTRA_CFLAGS`` get appended to ``CFLAGS``).
 
 ========================= =============================================
 Variable                   Default
@@ -155,7 +158,7 @@ LIBPATH
 LDFLAGS
 SWIGPY_SWIG
 SWIGPY_SWIGVERSION
-SWIGPY_SWIGFLAGS          ``[-python', '-builtin']``
+SWIGPY_SWIGFLAGS
 SWIGPY_SWIGDIRECTORSUFFIX
 SWIGPY_SWIGCFILESUFFIX
 SWIGPY_SWIGCXXFILESUFFIX
@@ -163,7 +166,7 @@ SWIGPY_SWIGPATH
 SWIGPY_SWIGINCPREFIX
 SWIGPY_SWIGINCSUFFIX
 SWIGPY_SWIGCOM
-SWIGPY_CPPPATH            ``[sysconfig.get_python_inc]``
+SWIGPY_CPPPATH
 SWIGPY_SHLIBPREFIX        ``'_'``
 SWIGPY_CCFLAGS
 SWIGPY_CFLAGS
@@ -174,6 +177,14 @@ SWIGPY_LDFLAGS
 SWIGPY_M2SWIGFILE         ``lambda parts: path.join(*parts) + '.i'``
 SWIGPY_M2CFILE            ``lambda parts: path.join(*parts)``
 SWIGPY_M2SHLIBFILE        ``lambda parts: path.join(*parts)``
+SWIGPY_EXTRA_SWIGFLAGS    ``[-python', '-builtin']``
+SWIGPY_EXTRA_CPPPATH      ``[sysconfig.get_python_inc]``
+SWIGPY_EXTRA_CCFLAGS
+SWIGPY_EXTRA_CFLAGS
+SWIGPY_EXTRA_CXXFLAGS
+SWIGPY_EXTRA_LIBS
+SWIGPY_EXTRA_LIBPATH
+SWIGPY_EXTRA_LDFLAGS
 ========================= =============================================
 
 The **SWIGPY_M2SWIGFILE** lambda determines the name of swig interface (source

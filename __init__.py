@@ -27,6 +27,7 @@ A supplementary tool for generating python modules with swig.
 __docformat__ = "restructuredText"
 
 def _prepare_kw2(env,kw):
+    from SCons.Util import CLVar
     keys2 =  [ 'SWIG'
              , 'SWIGVERSION'
              , 'SWIGFLAGS'
@@ -51,6 +52,21 @@ def _prepare_kw2(env,kw):
         val = kw.get(swigpy_key, kw.get(key, env.get(swigpy_key, None)))
         if val is not None:
             kw2[key] = val
+
+    keys2e = [ 'SWIGFLAGS'
+             , 'CPPPATH'
+             , 'CCFLAGS'
+             , 'CFLAGS'
+             , 'CXXFLAGS'
+             , 'LIBS'
+             , 'LIBPATH'
+             , 'LDFLAGS' ]
+    for key in keys2e:
+        swigpy_extra_key = "SWIGPY_EXTRA_%s" % key
+        extra = kw.get(swigpy_extra_key, env.get(swigpy_extra_key, None))
+        if extra is not None:
+            kw2[key] = CLVar(kw2.get(key,[])) + CLVar(extra)
+
     return kw2
 
 def _SwigPyModuleImpl(env, modname, **kw):
@@ -86,9 +102,9 @@ def _SwigPyModule(env, modname, **kw):
 
 def generate(env):
     from distutils import sysconfig
-    env.SetDefault( SWIGPY_CPPPATH      = [ sysconfig.get_python_inc() ]
+    env.SetDefault( SWIGPY_EXTRA_CPPPATH      = [ sysconfig.get_python_inc() ]
                   , SWIGPY_SHLIBPREFIX  = '_'
-                  , SWIGPY_SWIGFLAGS    = [ '-python', '-builtin' ])
+                  , SWIGPY_EXTRA_SWIGFLAGS    = [ '-python', '-builtin' ])
 
     env.AddMethod(_SwigPyModule, 'SwigPyModule')
 
