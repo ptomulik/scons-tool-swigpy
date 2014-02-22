@@ -131,9 +131,10 @@ table. Note that there are three groups of variables. The first group are the
 well known variables such as ``CFLAGS`` or ``SWIGFLAGS``. The second group are
 the variables prefixed with ``SWIGPY_``. These variables, if defined, overwrite
 the well known variables when generating python bindings. The third group are
-the variables prefixed with ``SWIGPY_EXTRA_``. These are lists of flags or
-other items (e.g. paths) that get appended to appropriate construction
-variables (so, for example ``SWIG_EXTRA_CFLAGS`` get appended to ``CFLAGS``).
+the variables prefixed with ``SWIGPY_PREPEND_`` or ``SWIGPY_APPEND_``. These
+are lists of flags or other items (e.g. paths) that get prepended or appended
+to appropriate construction variables (so, for example ``SWIG_APPEND_CFLAGS``
+is appended to ``CFLAGS``).
 
 ========================= =============================================
 Variable                   Default
@@ -177,14 +178,22 @@ SWIGPY_LDFLAGS
 SWIGPY_M2SWIGFILE         ``lambda parts: path.join(*parts) + '.i'``
 SWIGPY_M2CFILE            ``lambda parts: path.join(*parts)``
 SWIGPY_M2SHLIBFILE        ``lambda parts: path.join(*parts)``
-SWIGPY_EXTRA_SWIGFLAGS    ``[-python', '-builtin']``
-SWIGPY_EXTRA_CPPPATH      ``[sysconfig.get_python_inc]``
-SWIGPY_EXTRA_CCFLAGS
-SWIGPY_EXTRA_CFLAGS
-SWIGPY_EXTRA_CXXFLAGS
-SWIGPY_EXTRA_LIBS
-SWIGPY_EXTRA_LIBPATH
-SWIGPY_EXTRA_LDFLAGS
+SWIGPY_PREPEND_SWIGFLAGS
+SWIGPY_PREPEND_CPPPATH
+SWIGPY_PREPEND_CCFLAGS
+SWIGPY_PREPEND_CFLAGS
+SWIGPY_PREPEND_CXXFLAGS
+SWIGPY_PREPEND_LIBS
+SWIGPY_PREPEND_LIBPATH
+SWIGPY_PREPEND_LDFLAGS
+SWIGPY_APPEND_SWIGFLAGS   ``[-python', '-builtin']``
+SWIGPY_APPEND_CPPPATH     ``[sysconfig.get_python_inc]``
+SWIGPY_APPEND_CCFLAGS
+SWIGPY_APPEND_CFLAGS
+SWIGPY_APPEND_CXXFLAGS
+SWIGPY_APPEND_LIBS
+SWIGPY_APPEND_LIBPATH
+SWIGPY_APPEND_LDFLAGS
 ========================= =============================================
 
 The **SWIGPY_M2SWIGFILE** lambda determines the name of swig interface (source

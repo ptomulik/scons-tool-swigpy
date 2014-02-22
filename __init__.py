@@ -62,10 +62,14 @@ def _prepare_kw2(env,kw):
              , 'LIBPATH'
              , 'LDFLAGS' ]
     for key in keys2e:
-        swigpy_extra_key = "SWIGPY_EXTRA_%s" % key
-        extra = kw.get(swigpy_extra_key, env.get(swigpy_extra_key, None))
-        if extra is not None:
-            kw2[key] = CLVar(kw2.get(key,[])) + CLVar(extra)
+        swigpy_prepend_key = "SWIGPY_PREPEND_%s" % key
+        swigpy_append_key = "SWIGPY_APPEND_%s" % key
+        prepend = kw.get(swigpy_prepend_key, env.get(swigpy_prepend_key, None))
+        append = kw.get(swigpy_append_key, env.get(swigpy_append_key, None))
+        if prepend is not None:
+            kw2[key] = CLVar(prepend) + CLVar(kw2.get(key,[]))
+        if append is not None:
+            kw2[key] = CLVar(kw2.get(key,[])) + CLVar(append)
 
     return kw2
 
@@ -102,9 +106,9 @@ def _SwigPyModule(env, modname, **kw):
 
 def generate(env):
     from distutils import sysconfig
-    env.SetDefault( SWIGPY_EXTRA_CPPPATH      = [ sysconfig.get_python_inc() ]
-                  , SWIGPY_SHLIBPREFIX  = '_'
-                  , SWIGPY_EXTRA_SWIGFLAGS    = [ '-python', '-builtin' ])
+    env.SetDefault( SWIGPY_APPEND_CPPPATH   = [ sysconfig.get_python_inc() ]
+                  , SWIGPY_SHLIBPREFIX      = '_'
+                  , SWIGPY_APPEND_SWIGFLAGS = [ '-python', '-builtin' ])
 
     env.AddMethod(_SwigPyModule, 'SwigPyModule')
 
