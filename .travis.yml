@@ -1,0 +1,31 @@
+language:
+  python
+
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"
+
+matrix:
+  allow_failures:
+    - python: "2.7"
+
+addons:
+  apt:
+    packages:
+      - swig
+
+install:
+  - pip install -U pip
+  - pip --version
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
+  - python bin/downloads.py
+
+
+before_script:
+  - which python
+
+script:
+  - python runtest --verbose=2 -e test/system
