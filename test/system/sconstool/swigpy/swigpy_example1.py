@@ -41,19 +41,12 @@ else:
     test = TestSCons.TestSCons()
     _ext = _dll
 
+_tools_ = r"['default', 'swigpy']"
+_path_ = os.environ['PATH']
 if sys.platform == 'win32':
-    appveyor_image = os.environ.get('APPVEYOR_BUILD_WORKER_IMAGE', '')
-    if appveyor_image.lower() == 'mingw':
-        _tools_ = r"['mingw', 'swigpy']"
-    else:
-        _tools_ = r"['default', 'swigpy']"
-    _env_args_ = "tools=%s, ENV={'TEMP':'.', 'PATH': %r}" % (_tools_, os.environ['PATH'])
-    _include_windows_i_ = '%include <windows.i>'
-    _helloapi_ = '__declspec(dllexport) void'
+    _env_args_ = "tools=%(_tools_)s, ENV={'TEMP':'.', 'PATH': r%(_path_)r}" % locals()
 else:
-    _env_args_ = "tools=['default', 'swigpy']"
-    _include_windows_i_ = ''
-    _helloapi_ = 'void'
+    _env_args_ = "tools=%(_tools_)s" % locals()
 
 
 test.subdir(['site_scons'])
@@ -78,15 +71,24 @@ Import(['env'])
 env.Append( SWIGPY_CPPPATH = ['.'] )
 env.Append( SWIGPY_LIBPATH = ['.'] )
 env.Append( SWIGPY_SWIGFLAGS = ['-c++'] )
-env.SharedLibrary( 'hello', ['hello.cpp'] )
-env.SwigPyModule( 'hello', SWIGPY_LIBS = ['$SWIGPY_PYTHONLIB', 'hello'] )
+env.SharedLibrary('hello', ['hello.cpp'], CPPDEFINES={'BUILDING_HELLO': '1'})
+env.SwigPyModule('hello', SWIGPY_LIBS = ['$SWIGPY_PYTHONLIB', 'hello'])
 """)
 
 test.write('src/hello.hpp', """\
 // src/hello.hpp
 #ifndef HELLO_HPP
 #define HELLO_HPP
-%(_helloapi_)s hello();
+#ifdef _WIN32
+# ifdef BUILDING_HELLO
+#  define HELLO_API __declspec(dllexport)
+# else
+#  define HELLO_API __declspec(dllimport)
+# endif
+#else
+# define HELLO_API
+#endif
+extern void HELLO_API hello();
 #endif
 """ % locals())
 
@@ -94,7 +96,7 @@ test.write('src/hello.cpp', """\
 // src/hello.cpp
 #include "hello.hpp"
 #include <iostream>
-void hello() { std::cout << "Hello" << std::endl; }
+void HELLO_API hello() { std::cout << "Hello" << std::endl; }
 """)
 
 test.write('src/hello.i', """\
@@ -103,7 +105,7 @@ test.write('src/hello.i', """\
 %%{
 #include "hello.hpp"
 %%}
-%(_include_windows_i_)s
+#define HELLO_API
 %%include "hello.hpp"
 """ % locals())
 

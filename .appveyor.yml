@@ -1,34 +1,52 @@
 image:
-  - "Visual Studio 2017"
+  - "Visual Studio 2015"
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python27-x64"
-    - PYTHON: "C:\\Python35-x64"
-    - PYTHON: "C:\\Python36-x64"
-    - PYTHON: "C:\\Python37-x64"
+    - TARGET: mingw64
+      PYTHON: 'python2'
+    - TARGET: mingw64
+      PYTHON: 'python3'
+    - TARGET: win32
+      PYTHON: "C:\\Python27-x64\\python"
+    - TARGET: win32
+      PYTHON: "C:\\Python35-x64\\python"
+    - TARGET: win32
+      PYTHON: "C:\\Python36-x64\\python"
+    - TARGET: win32
+      PYTHON: "C:\\Python37-x64\\python"
+
+matrix:
+  allow_failures:
+    - TARGET: mingw64
 
 install:
-  - SET
-  - choco install swig
-  - refreshenv # keep it before any manual "SET VAR=..."
-  - SET
-  - SET "PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%"
-  - pip install --user -U pip
-  - pip install --user pipenv
-  - python -m pipenv install --dev
-    #  - python -m pipenv run python -m pip install -e .
-  - python "bin\\downloads.py"
-  - SET "PATH=C:\\MinGW\\bin;%PATH%"
-    # - mingw-get update
+  - cmd: IF [%TARGET%]==[win32] ( choco install swig && refreshenv )
+
+    # Setup %SHELL%
+  - cmd: IF [%TARGET%]==[win32] SET "SHELL=cmd /c"
+  - cmd: IF [%TARGET%]==[mingw64] SET "SHELL=C:\\msys64\\usr\\bin\\env MSYSTEM=MINGW64 MSYS2_PATH_TYPE=minimal /usr/bin/sh -e -l -c --"
+
+    # Setup %PATH%/$PATH
+  - cmd: IF [%TARGET%]==[mingw64] SET "MSYS2_PATH_TYPE=minimal"
+
+    # Setup initial environment for msys/cygwin
+  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "echo 'cd %APPVEYOR_BUILD_FOLDER%' | sed -e 's/^\\(\\w\\):/\\/\\l\\1/' -e 's/\\\\/\\//g' | tee -a ~/.profile"
+  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "echo 'PATH=~/.local/bin:$PATH' | tee -a ~/.profile"
+
+    # Install packages
+  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "pacman -S --noconfirm --needed mingw-w64-x86_64-%PYTHON% mingw-w64-x86_64-%PYTHON%-pip base-devel mingw-w64-x86_64-toolchain"
+  - cmd: "%SHELL% \"%PYTHON% -m pip install --user -U pip\""
+  - cmd: "%SHELL% \"%PYTHON% -m pip install --user pipenv\""
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv install --dev\""
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python bin/downloads.py\""
 
 before_test:
-  - python -m pipenv --version
-  - python -m pipenv run python --version
-  - python -m pipenv run scons --version
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv --version\""
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python --version\""
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv run scons --version\""
 
 build: off
 
 test_script:
-  #  - python -m pipenv run python -m unittest discover -t . -s "test\\unit"
-  - cmd: powershell -Command "& { python -m pipenv run python runtest --verbose=2 -e test\\system; if($LastExitCode -eq 2 -Or $LastExitCode -eq 0) { $host.SetShouldExit(0)} else {$host.SetShouldExit(1)}}"
+  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python runtest --verbose=2 -e test/system\""
