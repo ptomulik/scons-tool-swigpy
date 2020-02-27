@@ -121,10 +121,13 @@ _default_packages = [ 'scons-test', ]
 
 # scons versions other than x.y.z
 _scons_versions = ['master', '2.1.0.final.0']
-_default_scons_version = _scons_versions[0]
+if sys.version_info.major == 2 or (os.getenv('TOXENV') or '').startswith('py2'):
+    _default_scons_version = '3.0.5'
+else:
+    _default_scons_version = _scons_versions[0]
 
 # scons-test
-_default_scons_test_version = _scons_versions[0]
+_default_scons_test_version = _default_scons_version
 
 _parser = argparse.ArgumentParser(
         prog=_script,
