@@ -35,7 +35,6 @@ def python_lib_name():
     return 'python' + str(sysconfig.get_config_var('VERSION'))
 
 def python_lib_dir():
-    sys.stdout.write("sysconfig.get_platform(): " + (sysconfig.get_platform() or "None") + "\n");
     if sysconfig.get_platform() in ['win32', 'win-amd64']:
         try:
             base = sys.real_prefix
