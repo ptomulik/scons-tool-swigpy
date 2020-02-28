@@ -36,11 +36,7 @@ def python_lib_name():
 
 def python_lib_dir():
     if sysconfig.get_platform() in ['win32', 'win-amd64']:
-        try:
-            base = sys.real_prefix
-        except AttributeError:
-            base = sys.prefix
-        sys.stdout.write("base: " + base + "\n");
+        base = getattr(sys, 'real_prefix', getattr(sys, 'base_prefix', sys.prefix))
         return os.path.join(base, 'libs')
     else:
         return sysconfig.get_config_var('LIBPL')
