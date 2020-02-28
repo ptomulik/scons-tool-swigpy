@@ -4,25 +4,41 @@ image:
 environment:
   matrix:
     - TARGET: mingw64
-      PYTHON: 'python2'
+      PYTHON: "C:\\mingw64\\bin"
+      PYPATH: "C:\\msys64\\home\\appveyor\\.local\\bin;%PYTHON%;C:\\msys64\\usr\\local\\bin;C:\\msys64\\usr\\bin"
+      PY: 'python2'
     - TARGET: mingw64
-      PYTHON: 'python3'
+      PYTHON: "C:\\mingw64\\bin"
+      PYPATH: "C:\\msys64\\home\\appveyor\\.local\\bin;%PYTHON%;C:\\msys64\\usr\\local\\bin;C:\\msys64\\usr\\bin"
+      PY: 'python3'
     - TARGET: win32
-      PYTHON: "C:\\Python27-x64\\python"
+      PYTHON: "C:\\Python27-x64"
+      PYPATH: "%APPDATA%\\Python\\Scripts;%PYTHON%;%PYTHON%\\Scripts"
+      PY: python
     - TARGET: win32
-      PYTHON: "C:\\Python35-x64\\python"
+      PYTHON: "C:\\Python35-x64"
+      PYPATH: "%APPDATA%\\Python\\Python35\\Scripts;%PYTHON%;%PYTHON%\\Scripts"
+      PY: python
     - TARGET: win32
-      PYTHON: "C:\\Python36-x64\\python"
+      PYTHON: "C:\\Python36-x64"
+      PYPATH: "%APPDATA%\\Python\\Python36\\Scripts;%PYTHON%;%PYTHON%\\Scripts"
+      PY: python
     - TARGET: win32
-      PYTHON: "C:\\Python37-x64\\python"
+      PYTHON: "C:\\Python37-x64"
+      PYPATH: "%APPDATA%\\Python\\Python37\\Scripts;%PYTHON%;%PYTHON%\\Scripts"
+      PY: python
 
 matrix:
   allow_failures:
     - TARGET: mingw64
-    - PYTHON: "C:\\Python27-x64\\python"
+    - PYTHON: "C:\\Python27-x64"
 
 install:
   - cmd: IF [%TARGET%]==[win32] ( choco install swig && refreshenv )
+
+  - cmd: IF [%TARGET%]==[win32] SET "WINPATH=%PATH%"
+  - cmd: IF [%TARGET%]==[mingw64] SET "WINPATH=C:\\Windows\\System32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+  - cmd: SET "PATH=%PYPATH%;%WINPATH%"
 
     # Setup %SHELL%
   - cmd: IF [%TARGET%]==[win32] SET "SHELL=cmd /c"
@@ -36,18 +52,19 @@ install:
   - cmd: IF [%TARGET%]==[mingw64] %SHELL% "echo 'PATH=~/.local/bin:$PATH' | tee -a ~/.profile"
 
     # Install packages
-  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "pacman -S --noconfirm --needed mingw-w64-x86_64-%PYTHON% mingw-w64-x86_64-%PYTHON%-pip base-devel mingw-w64-x86_64-toolchain"
-  - cmd: "%SHELL% \"%PYTHON% -m pip install --user -U pip\""
-  - cmd: "%SHELL% \"%PYTHON% -m pip install --user pipenv\""
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv install --dev\""
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python bin/downloads.py\""
+  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "pacman -S --noconfirm --needed mingw-w64-x86_64-%PY% mingw-w64-x86_64-%PY%-virtualenv mingw-w64-x86_64-%PY%-pip mingw-w64-x86_64-toolchain"
+  - cmd: IF [%TARGET%]==[win32] %SHELL% "%PY% -m pip install -U pip"
+  - cmd: IF [%TARGET%]==[win32] %SHELL% "%PY% -m pip install -U virtualenv"
+  - cmd: "%PY% -m pip install -U pipenv"
+  - cmd: "%SHELL% \"%PY% -m pipenv install --dev\""
+  - cmd: "%SHELL% \"%PY% -m pipenv run python bin/downloads.py\""
 
 before_test:
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv --version\""
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python --version\""
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv run scons --version\""
+  - cmd: "%SHELL% \"%PY% -m pipenv --version\""
+  - cmd: "%SHELL% \"%PY% -m pipenv run python --version\""
+  - cmd: "%SHELL% \"%PY% -m pipenv run scons --version\""
 
 build: off
 
 test_script:
-  - cmd: "%SHELL% \"%PYTHON% -m pipenv run python runtest --verbose=2 -e test/system\""
+  - cmd: "%SHELL% \"%PY% -m pipenv run python runtest --verbose=2 -e test/system\""
