@@ -31,8 +31,7 @@ environment:
 matrix:
   allow_failures:
     - TARGET: mingw64
-### One day we'll have to uncomment this:
-##    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python27-x64"
 
 install:
     # variables for: mingw64
