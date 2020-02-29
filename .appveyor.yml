@@ -4,13 +4,13 @@ image:
 environment:
   matrix:
     - TARGET: mingw64
-      PYTHON: "C:\\mingw64\\bin"
+      PYTHON: "C:\\msys64\\mingw64\\bin"
       PYPATH: "C:\\msys64\\home\\appveyor\\.local\\bin;%PYTHON%;C:\\msys64\\usr\\local\\bin;C:\\msys64\\usr\\bin"
-      PY: 'python2'
+      PY: python2
     - TARGET: mingw64
-      PYTHON: "C:\\mingw64\\bin"
+      PYTHON: "C:\\msys64\\mingw64\\bin"
       PYPATH: "C:\\msys64\\home\\appveyor\\.local\\bin;%PYTHON%;C:\\msys64\\usr\\local\\bin;C:\\msys64\\usr\\bin"
-      PY: 'python3'
+      PY: python3
     - TARGET: win32
       PYTHON: "C:\\Python27-x64"
       PYPATH: "%APPDATA%\\Python\\Scripts;%PYTHON%;%PYTHON%\\Scripts"
@@ -31,40 +31,24 @@ environment:
 matrix:
   allow_failures:
     - TARGET: mingw64
-    - PYTHON: "C:\\Python27-x64"
+### One day we'll have to uncomment this:
+##    - PYTHON: "C:\\Python27-x64"
 
 install:
-  - cmd: IF [%TARGET%]==[win32] ( choco install swig && refreshenv )
-
-  - cmd: IF [%TARGET%]==[win32] SET "WINPATH=%PATH%"
-  - cmd: IF [%TARGET%]==[mingw64] SET "WINPATH=C:\\Windows\\System32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
-  - cmd: SET "PATH=%PYPATH%;%WINPATH%"
-
-    # Setup %SHELL%
-  - cmd: IF [%TARGET%]==[win32] SET "SHELL=cmd /c"
-  - cmd: IF [%TARGET%]==[mingw64] SET "SHELL=C:\\msys64\\usr\\bin\\env MSYSTEM=MINGW64 MSYS2_PATH_TYPE=minimal /usr/bin/sh -e -l -c --"
-
-    # Setup %PATH%/$PATH
-  - cmd: IF [%TARGET%]==[mingw64] SET "MSYS2_PATH_TYPE=minimal"
-
-    # Setup initial environment for msys/cygwin
-  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "echo 'cd %APPVEYOR_BUILD_FOLDER%' | sed -e 's/^\\(\\w\\):/\\/\\l\\1/' -e 's/\\\\/\\//g' | tee -a ~/.profile"
-  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "echo 'PATH=~/.local/bin:$PATH' | tee -a ~/.profile"
-
-    # Install packages
-  - cmd: IF [%TARGET%]==[mingw64] %SHELL% "pacman -S --noconfirm --needed mingw-w64-x86_64-%PY% mingw-w64-x86_64-%PY%-virtualenv mingw-w64-x86_64-%PY%-pip mingw-w64-x86_64-toolchain"
-  - cmd: IF [%TARGET%]==[win32] %SHELL% "%PY% -m pip install -U pip"
-  - cmd: IF [%TARGET%]==[win32] %SHELL% "%PY% -m pip install -U virtualenv"
-  - cmd: "%PY% -m pip install -U pipenv"
-  - cmd: "%SHELL% \"%PY% -m pipenv install --dev\""
-  - cmd: "%SHELL% \"%PY% -m pipenv run python bin/downloads.py\""
+    # variables for: mingw64
+  - IF [%TARGET%]==[mingw64] SET "PATH=%PYPATH%;C:\\Windows\\System32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+  - IF [%TARGET%]==[mingw64] SET "SHELL=C:\\msys64\\usr\\bin\\env MSYSTEM=MINGW64 MSYS2_PATH_TYPE=minimal /usr/bin/sh -e -l -c --"
+  - IF [%TARGET%]==[mingw64] SET "MSYS2_PATH_TYPE=minimal"
+    # variables for: win 32
+  - IF [%TARGET%]==[win32] ( choco install swig && refreshenv )
+  - IF [%TARGET%]==[win32] SET "PATH=%PYPATH%;%PATH%"
+    # install comands
+  - .appveyor/install-%TARGET%.bat
 
 before_test:
-  - cmd: "%SHELL% \"%PY% -m pipenv --version\""
-  - cmd: "%SHELL% \"%PY% -m pipenv run python --version\""
-  - cmd: "%SHELL% \"%PY% -m pipenv run scons --version\""
+  - .appveyor/before_test-%TARGET%.bat
 
 build: off
 
 test_script:
-  - cmd: "%SHELL% \"%PY% -m pipenv run python runtest --verbose=2 -e test/system\""
+  - .appveyor/test_script-%TARGET%.bat

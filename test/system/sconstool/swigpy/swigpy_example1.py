@@ -28,20 +28,40 @@ Test example from README.rst
 
 import sys
 import os
+import sysconfig
 import TestSCons
+import TestCmd
 
 _dll = TestSCons._dll
 dll_ = TestSCons.dll_
 _python_ = TestSCons._python_
 
+
 if sys.platform == 'win32':
-    test = TestSCons.TestSCons(program='scons.bat', interpreter=None)
     _ext = '.pyd'
 else:
-    test = TestSCons.TestSCons()
     _ext = _dll
 
-_tools_ = r"['default', 'swigpy']"
+
+_scons_ = TestCmd.where_is('scons')
+if _scons_ is not None:
+    # Find the actual scons Python script. We believe that the scons found
+    # withing PATH is the one installed for our _python_.
+    if _scons_[-4:].upper() in ['.BAT']:
+        # On win32 the python script is found alongside with the .BAT script.
+        # where_is() returns 'scons.BAT', so we need to strip out the extension.
+        _scons_ = _scons_[:-4]
+    test = TestSCons.TestSCons(program=_scons_, interpreter=_python_)
+else:
+    test = TestSCons.TestSCons(interpreter=_python_)
+
+
+if sysconfig.get_platform().startswith('mingw'):
+    # Set 'mingw' tool, because 'default' prefers MS Visual C Compiler
+    _tools_ = r"['mingw', 'swigpy']"
+else:
+    _tools_ = r"['default', 'swigpy']"
+
 _path_ = os.environ['PATH']
 if sys.platform == 'win32':
     _env_args_ = "tools=%(_tools_)s, ENV={'TEMP':'.', 'PATH': r%(_path_)r}" % locals()
