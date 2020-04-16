@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2014-2018 by Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+# Copyright (c) 2014-2020 by Paweł Tomulik <ptomulik@meil.pw.edu.pl>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ Test example from README.rst
 import sys
 import os
 import sysconfig
+import subprocess
 import TestSCons
 import TestCmd
 
@@ -56,6 +57,14 @@ else:
     test = TestSCons.TestSCons(interpreter=_python_)
 
 
+test.subdir(['site_scons'])
+test.subdir(['site_scons', 'site_tools'])
+test.subdir(['site_scons', 'site_tools', 'swigpy'])
+test.file_fixture('../../../../__init__.py','site_scons/site_tools/swigpy/__init__.py')
+test.file_fixture('../../../../about.py','site_scons/site_tools/swigpy/about.py')
+test.file_fixture('../../../../pyconf.py','site_scons/site_tools/swigpy/pyconf.py')
+
+
 if sysconfig.get_platform().startswith('mingw'):
     # Set 'mingw' tool, because 'default' prefers MS Visual C Compiler
     _tools_ = r"['mingw', 'swigpy']"
@@ -68,13 +77,20 @@ if sys.platform == 'win32':
 else:
     _env_args_ = "tools=%(_tools_)s" % locals()
 
+# support compiling and testing against custom python interpreter (other than the one running this script).
 
-test.subdir(['site_scons'])
-test.subdir(['site_scons', 'site_tools'])
-test.subdir(['site_scons', 'site_tools', 'swigpy'])
-test.file_fixture('../../../../__init__.py','site_scons/site_tools/swigpy/__init__.py')
-test.file_fixture('../../../../about.py','site_scons/site_tools/swigpy/about.py')
-test.file_fixture('../../../../pyconf.py','site_scons/site_tools/swigpy/pyconf.py')
+_swigpy_python_ = os.environ.get('SWIGPY_PYTHON', _python_)
+
+try:
+    _swigpy_pyconf_ = os.environ['SWIGPY_PYCONF']
+except KeyError:
+    if _swigpy_python_ != _python_:
+        _swigpy_pyconf_ = subprocess.check_output([_swigpy_python_, 'site_scons/site_tools/swigpy/pyconf.py'], universal_newlines=True)
+    else:
+        _swigpy_pyconf_ = None
+
+if _swigpy_pyconf_ is not None:
+    _env_args_ = _env_args_ + ', **%(_swigpy_pyconf_)s' % locals()
 
 test.subdir(['src'])
 
@@ -137,7 +153,7 @@ test.must_exist('build/_hello%(_ext)s' % locals())
 test.must_exist('build/hello.py')
 
 test.write('build/test.py', """\
-#!%(_python_)s
+#!%(_swigpy_python_)s
 import hello
 hello.hello()
 """ % locals())
@@ -147,7 +163,7 @@ if sys.platform == 'win32':
     os.environ['PYTHONPATH'] = test.workpath('build')
 else:
     os.environ['LD_LIBRARY_PATH'] = test.workpath('build')
-test.run(chdir='build', program='test.py', interpreter=_python_, stdout='Hello\n', stderr=None)
+test.run(chdir='build', program='test.py', interpreter=_swigpy_python_, stdout='Hello\n', stderr=None)
 
 
 test.pass_test()
