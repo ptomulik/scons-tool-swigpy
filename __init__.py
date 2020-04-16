@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2014-2018 by Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+# Copyright (c) 2014-2020 by Paweł Tomulik <ptomulik@meil.pw.edu.pl>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -203,7 +203,7 @@ def createSwigPyShlibBuilder(env):
 
 
 def swigPySetDefaults(env):
-    # SetDefault(SWIGPY_PYTHONINCDIR=..., SWIGPY_PYTHOLIB=..., SWIGPY_PYTHOLIBDIR=...)
+    # SetDefault(SWIGPY_PYTHONINCDIR=..., SWIGPY_PYTHONLIB=..., SWIGPY_PYTHONLIBDIR=...)
     env.SetDefault(**get_py_config())
     env.SetDefault(SWIGPY_SHLIBPREFIX='_')
     env.SetDefault(SWIGPY_LIBPREFIX='_')
